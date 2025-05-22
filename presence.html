@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presence</title>
+    <style>
+        :root {
+            --card-width: CSS_VAR_CARD_WIDTH;
+            --card-height: CSS_VAR_CARD_HEIGHT;
+        }
+
+        * {
+            overflow: hidden;
+        }
+
+        body {
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        @media screen and (min-width: 600px) {
+            body {
+                background-color: #23272a;
+            }
+        }
+
+        .profile-card {
+            position: relative;
+            width: var(--card-width);
+            height: var(--card-height);
+            border-radius: 20px;
+            padding: 0 9px 9px 9px;
+            box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .bgimage {
+            position: absolute;
+            width: calc(100% + 5px);
+            height: calc(100% + 5px);
+            border-radius: 20px;
+            object-fit: cover;
+            z-index: -1;
+            top: -5px;
+            left: -5px;
+            filter: blur(5px) brightness(0.5);
+        }
+
+        .avatar {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            margin-top: 4.2857%;
+            /* 15px / 350px */
+        }
+
+        .avatar img {
+            width: 15.7143%;
+            /* 55px / 350px */
+            height: auto;
+            border-radius: 50%;
+            margin-right: 3.7143%;
+            /* 13px / 350px */
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            margin: 0;
+            font-size: 1.1em;
+            color: #fff;
+        }
+
+        .status-dot {
+            position: absolute;
+            width: 4%;
+            /* 15px / 350px */
+            height: auto;
+            /* 15px / 350px */
+            border-radius: 50%;
+            background-color: #23272a;
+            top: 27%;
+            /* 51px / 350px */
+            left: 14%;
+            /* 45px / 350px */
+            z-index: 2;
+        }
+
+        .status-dot-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .custom-status {
+            margin: 1.1429% 0;
+            /* 4px / 350px */
+            color: #b9bbbe;
+        }
+
+        .presence {
+            margin-top: 3.4286%;
+            /* 12px / 350px */
+        }
+
+        .presence-header {
+            display: flex;
+            align-items: center;
+            overflow: visible;
+        }
+
+        .presence-assets {
+            position: relative;
+            display: flex;
+            margin-right: 2.5714%;
+            /* 9px / 350px */
+            overflow: visible;
+            flex-direction: column;
+            aspect-ratio: 1 / 1;
+            /* Maintain a square aspect ratio */
+            width: 20%;
+        }
+
+        .large-image {
+            width: 100%;
+            /* 70px / 350px */
+            height: auto;
+            margin-right: 2.5714%;
+            /* 9px / 350px */
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .small-image {
+            width: 35%;
+            /* 28px / 350px */
+            height: auto;
+            position: absolute;
+            bottom: -5%;
+            /* -4px / 350px */
+            left: 72%;
+            /* 4px / 350px */
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            clip-path: circle(50%);
+            overflow: visible;
+        }
+
+        .presence-details-container {
+            flex: 1;
+        }
+
+        .presence-name {
+            margin: 0;
+            font-size: 1.08em;
+            color: #fff;
+        }
+
+        .presence-details {
+            margin: 1.1429% 0;
+            /* 4px / 350px */
+            font-weight: bold;
+        }
+
+        .presence-state {
+            margin: 1.1429% 0;
+            /* 4px / 350px */
+            color: #b9bbbe;
+        }
+
+        .presence-timestamps {
+            margin-top: 2.5714%;
+            /* 9px / 350px */
+        }
+
+        .start-time,
+        .end-time {
+            margin: 1.1429% 0;
+            /* 4px / 350px */
+            color: #b9bbbe;
+        }
+
+        a {
+            color: #7289da;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <!--
+    Discord Presence Card
+    Made by:
+    - Deutscher775 (deutscher775.de)
+
+    In collaboration with:
+    - DeltaWolf (delta.jesn.zip)
+    - Kahnimanie (kahnimahnie on Discord)
+
+    This card is designed to display a Discord user's presence on a website, OBS or any other platform that supports HTML, CSS and JS.
+    License: MIT
+
+    © 2025 api.deutscher775.de | All rights reserved.
+    -->
+    <script>
+        let cssVarCardWidth =
+            window.location.searchParams?.get("width") || "350px";
+        let cssVarCardHeight =
+            window.location.searchParams?.get("height") || "auto";
+        if (cssVarCardWidth === "auto" || cssVarCardHeight === "auto") {
+            console.error(
+                "Invalid CSS variable values for width or height. Please provide valid values."
+            );
+            cssVarCardWidth = "350px";
+            cssVarCardHeight = "auto";
+        } else {
+            console.log("CSS variable values set successfully.");
+        }
+        if (!isNaN(cssVarCardWidth)) {
+            cssVarCardWidth = cssVarCardWidth + "px";
+        }
+        if (!isNaN(cssVarCardHeight)) {
+            cssVarCardHeight = cssVarCardHeight + "px";
+        }
+        console.log("Card width:", cssVarCardWidth);
+        console.log("Card height:", cssVarCardHeight);
+        document.documentElement.style.setProperty(
+            "--card-width",
+            cssVarCardWidth
+        );
+        document.documentElement.style.setProperty(
+            "--card-height",
+            cssVarCardHeight
+        );
+    </script>
+    <div class="profile-card" id="profile-card">
+        <img src="" alt="" class="bgimage" id="bgimage" />
+        <span id="STATUS_DOT" class="status-dot"><img src="./status_icons/online.png" alt="" id="STATUS_DOT_IMG"
+                class="status-dot-img" /></span>
+        <div class="avatar">
+            <img id="USER_AVATAR" src="USER_AVATAR" alt="Avatar" />
+            <div class="user-info">
+                <h2 id="USERNAME" class="username"></h2>
+                <p id="CUSTOM_STATUS" class="custom-status" style="line-height: 1.5em"></p>
+            </div>
+        </div>
+        <div class="presence">
+            <div class="presence-header">
+                <div class="presence-assets">
+                    <img id="LARGE_IMAGE_URL" src="" alt="" class="large-image"
+                        onclick="togglePlayPause(document.querySelector('.small-image'))" />
+                    <img id="SMALL_IMAGE_URL" src="" alt="" class="small-image"
+                        onclick="togglePlayPause(this)" />
+                    <audio id="audioPlayer" src=""></audio>
+                    <script>
+                        function togglePlayPause(image) {
+                            const audioPlayer = document.getElementById("audioPlayer");
+                            audioPlayer.volume = 0.05;
+                            if (audioPlayer.paused) {
+                                audioPlayer.play();
+                                image.src = image.src.replace("play", "pause");
+                            } else {
+                                audioPlayer.pause();
+                                image.src = image.src.replace("pause", "play");
+                            }
+
+                            audioPlayer.addEventListener("ended", function () {
+                                image.src = image.src.replace("pause", "play");
+                            });
+                        }
+                    </script>
+                </div>
+                <div class="presence-details-container">
+                    <h3 id="PRESENCE_NAME" class="presence-name"></h3>
+                    <p id="PRESENCE_DETAILS" class="presence-details"></p>
+                    <p id="PRESENCE_STATE" class="presence-state"></p>
+                </div>
+            </div>
+            <div class="presence-timestamps">
+                <div class="playbar-container" style="position: relative; height: 7px; border-radius: 5px">
+                    <div id="playbar" style="
+								position: absolute;
+								height: 100%;
+								width: 0;
+								background-color: #7289da;
+								border-radius: 5px;
+							"></div>
+                </div>
+                <div class="timestamps" style="
+							display: flex;
+							justify-content: space-between;
+							margin-top: 5px;
+						">
+                    <span id="START_TIME"></span>
+                    <span id="END_TIME"></span>
+                </div>
+            </div>
+            <script>
+                const path = window.location.pathname;
+                const userid = path.split("/").pop();
+                const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+                const websocketUrl = `${protocol}://${window.location.host}`;
+                var ws = new WebSocket(websocketUrl);
+
+                ws.onopen = () => {
+                    console.log("Connected to WebSocket");
+                    ws.send(JSON.stringify({ type: "connect", userid }));
+                    console.log("Sent connect message with userid:", userid);
+                };
+
+                ws.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+
+                    // Log all parsed data for debugging
+                    console.log("Parsed data:", data);
+
+                    if (data.type === "connected" && data.userid === userid) {
+                        updatePresence(data.presence);
+                    } else if (
+                        data.type === "presence_update" &&
+                        data.userid === userid
+                    ) {
+                        updatePresence(data.presence);
+                    } else {
+                        console.log(
+                            "Message type or userid did not match:",
+                            data.type,
+                            data.userid
+                        );
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.error("Disconnected from WebSocket. Reloading page in 5 seconds...");
+                    setTimeout(() => {
+                        console.log("Reconnecting to WebSocket...");
+                        window.location.reload();
+                    }, 5000); // Reconnect after 5 seconds                    
+                };
+
+                ws.onerror = (error) => {
+                    console.error("WebSocket error:", error);
+                };
+
+                function updatePresence(presence) {
+                    console.log("Updating presence:", presence);
+
+                    // 1. Banner
+                    let banner = document.getElementById("bgimage");
+                    if (presence.banner) {
+                        if (!banner) {
+                            banner = document.createElement("img");
+                            banner.id = "bgimage";
+                            banner.className = "bgimage";
+                            const profileCard = document.getElementById("profile-card");
+                            if (profileCard)
+                                profileCard.insertBefore(banner, profileCard.firstChild);
+                        }
+                        banner.src = presence.banner;
+                        banner.style.display = "block";
+                        banner.style.filter = "blur(5px) brightness(0.5)";
+                    } else if (banner) {
+                        banner.style.display = "none";
+                    }
+
+                    // 2. Hidden user
+                    const avatarDiv = document.querySelector(".avatar");
+                    if (presence.hidden) {
+                        if (avatarDiv) avatarDiv.style.display = "none";
+                        const statusDot = document.getElementById("STATUS_DOT");
+                        if (statusDot) statusDot.style.display = "none";
+                    } else {
+                        if (avatarDiv) avatarDiv.style.display = "flex";
+                        let statusDot = document.getElementById("STATUS_DOT");
+                        if (!statusDot) {
+                            statusDot = document.createElement("div");
+                            statusDot.id = "STATUS_DOT";
+                            document.body.appendChild(statusDot); // Adjust container
+                        }
+                        statusDot.style.display = "block";
+                        statusDot.className = `status-dot ${presence.status || ""}`;
+                    }
+
+                    // Username
+                    const usernameTag = document.getElementById("USERNAME");
+                    if (usernameTag && !presence.hidden) {
+                        usernameTag.innerHTML = "";
+                        const a = document.createElement("a");
+                        a.href = `https://discordapp.com/users/${presence.userid || ""}`;
+                        a.target = "_blank";
+                        a.textContent = presence.username || "";
+                        usernameTag.appendChild(a);
+                    }
+
+                    // Status Dot IMG
+                    let statusDotImg = document.getElementById("STATUS_DOT_IMG");
+                    if (!statusDotImg) {
+                        statusDotImg = document.createElement("img");
+                        statusDotImg.id = "STATUS_DOT_IMG";
+                        document.body.appendChild(statusDotImg); // Adjust container
+                    }
+                    statusDotImg.src = `https://api.deutscher775.de/presence/status_icons/${presence.status || "online"
+                        }.png`;
+
+                    // Custom Status
+                    let customStatusTag = document.getElementById("CUSTOM_STATUS");
+                    if (
+                        !customStatusTag &&
+                        (presence.custom_status || presence.custom_status_emoji)
+                    ) {
+                        customStatusTag = document.createElement("div");
+                        customStatusTag.id = "CUSTOM_STATUS";
+                        document.body.appendChild(customStatusTag); // Adjust container
+                    }
+
+                    if (customStatusTag) {
+                        if (presence.custom_status || presence.custom_status_emoji) {
+                            customStatusTag.innerHTML = "";
+                            if (presence.custom_status_emoji) {
+                                const emojiImg = document.createElement("img");
+                                emojiImg.id = "CUSTOM_STATUS_EMOJI";
+                                emojiImg.src = presence.custom_status_emoji;
+                                emojiImg.alt = "";
+                                emojiImg.style =
+                                    "vertical-align: middle; height: 20px; width: 20px; margin: 0; margin-right: 5px; border-radius: 0;";
+                                customStatusTag.appendChild(emojiImg);
+                            }
+                            if (presence.custom_status !== "Custom Status") {
+                                customStatusTag.appendChild(
+                                    document.createTextNode(presence.custom_status || "")
+                                );
+                            }
+                            customStatusTag.style.display = "block";
+                        } else {
+                            customStatusTag.style.display = "none";
+                        }
+                    }
+
+                    // Avatar
+                    const userAvatar = document.getElementById("USER_AVATAR");
+                    if (userAvatar) {
+                        userAvatar.src = presence.avatar || "";
+                    }
+
+                    // Activities
+                    let activities = presence.activities || [];
+                    if (activities.length === 0) {
+                        activities = [
+                            {
+                                name: "I'm not doing anything",
+                                assets: { large_image_url: null, small_image_url: null },
+                                timestamps: { start: null, end: null },
+                            },
+                        ];
+                    }
+                    let activity = activities[0];
+                    if (activity.name === "Custom Status" && activities.length > 1) {
+                        activity = activities[1];
+                    } else if (
+                        activity.name === "Custom Status" &&
+                        activities.length === 1
+                    ) {
+                        activity.name = "I'm not doing anything";
+                    }
+
+                    // Large image
+                    let largeImageTag = document.getElementById("LARGE_IMAGE_URL");
+                    if (!largeImageTag && activity.assets?.large_image_url) {
+                        largeImageTag = document.createElement("img");
+                        largeImageTag.id = "LARGE_IMAGE_URL";
+                        document.body.appendChild(largeImageTag); // Adjust container
+                    }
+                    if (largeImageTag) {
+                        if (activity.assets?.large_image_url) {
+                            largeImageTag.src = activity.assets.large_image_url;
+                            largeImageTag.style.display = "block";
+                        } else {
+                            largeImageTag.src = `${window.location.origin}/presence/imagenotfound.png`;
+                        }
+                    }
+
+                    // Small image
+                    let smallImageTag = document.getElementById("SMALL_IMAGE_URL");
+                    if (!smallImageTag && activity.assets?.small_image_url) {
+                        smallImageTag = document.createElement("img");
+                        smallImageTag.id = "SMALL_IMAGE_URL";
+                        smallImageTag.src = `${window.location.origin}/presence/imagenotfound.png`;
+                        document.body.appendChild(smallImageTag); // Adjust container
+                    }
+                    if (smallImageTag) {
+                        if (activity.assets?.small_image_url) {
+                            smallImageTag.src = activity.assets.small_image_url;
+                            smallImageTag.style.display = "block";
+                        } else {
+                            smallImageTag.display = "none";
+                        }
+                    }
+
+                    // Presence name
+                    const presenceNameTag = document.getElementById("PRESENCE_NAME");
+                    if (presenceNameTag) {
+                        if (activity.name) {
+                            presenceNameTag.innerHTML = "";
+                            const a = document.createElement("a");
+                            a.href = activity.url || "#";
+                            a.target = "_blank";
+                            a.textContent = activity.name;
+                            presenceNameTag.appendChild(a);
+                        } else {
+                            presenceNameTag.style.display = "none";
+                        }
+                    }
+
+                    // Presence details
+                    const presenceDetailsTag =
+                        document.getElementById("PRESENCE_DETAILS");
+                    if (presenceDetailsTag) {
+                        if (activity.details) {
+                            presenceDetailsTag.textContent =
+                                activity.details.length > 25
+                                    ? activity.details.slice(0, 25) + "..."
+                                    : activity.details;
+                            presenceDetailsTag.style.display = "block";
+                        } else {
+                            presenceDetailsTag.style.display = "none";
+                        }
+                    }
+
+                    // Presence state
+                    const presenceStateTag = document.getElementById("PRESENCE_STATE");
+                    if (presenceStateTag) {
+                        if (activity.state) {
+                            presenceStateTag.textContent =
+                                activity.state.length > 25
+                                    ? activity.state.slice(0, 25) + "..."
+                                    : activity.state;
+                            presenceStateTag.style.display = "block";
+                        } else {
+                            presenceStateTag.style.display = "none";
+                        }
+                    }
+
+                    // Start and End time
+                    const startTimeTag = document.getElementById("START_TIME");
+                    const endTimeTag = document.getElementById("END_TIME");
+                    if (startTimeTag)
+                        startTimeTag.textContent = String(
+                            activity.timestamps?.start || ""
+                        );
+                    if (endTimeTag)
+                        endTimeTag.textContent = String(activity.timestamps?.end || "");
+
+                    // atomicradio special
+                    if (activity.name === "atomicradio") {
+                        const song_id = (activity.assets.large_image_url || "")
+                            .split("/")
+                            .pop()
+                            .split(".")[0];
+                        const preview_url = `https://assets.atomic.radio/tracks/previews/${song_id}.aac`;
+
+                        const audioPlayer = document.getElementById("audioPlayer");
+                        if (audioPlayer) {
+                            fetch(preview_url, { method: "HEAD" })
+                                .then((response) => {
+                                    if (response.ok) {
+                                        audioPlayer.src = preview_url;
+                                    } else {
+                                        audioPlayer.src = `https://listen.atomic.radio/${activity.assets.small_image_text.toLowerCase()}/lowquality`;
+                                    }
+                                })
+                                .catch(() => {
+                                    audioPlayer.src = `https://listen.atomic.radio/${activity.assets.small_image_text.toLowerCase()}/lowquality`;
+                                });
+
+                            if (banner) {
+                                try {
+                                    const preview_gif_url = `https://assets.atomic.radio/tracks/previews/${song_id}.mp4`;
+                                    fetch(preview_gif_url, { method: "HEAD" })
+                                        .then((response) => {
+                                            if (response.ok) {
+                                                banner.remove();
+                                                const video = document.createElement("video");
+                                                video.autoplay = true;
+                                                video.loop = true;
+                                                video.muted = true;
+                                                video.id = "bgimage";
+                                                video.className = "bgimage";
+                                                video.src = preview_gif_url;
+                                                video.style.filter = "blur(5px) brightness(0.5)";
+                                                const profileCard =
+                                                    document.getElementById("profile-card");
+                                                if (profileCard)
+                                                    profileCard.insertBefore(
+                                                        video,
+                                                        profileCard.firstChild
+                                                    );
+                                            } else {
+                                                if (banner.tagName !== "IMG") {
+                                                    const img = document.createElement("img");
+                                                    img.id = "bgimage";
+                                                    img.className = "bgimage";
+                                                    img.src = presence.banner;
+                                                    const profileCard =
+                                                        document.getElementById("profile-card");
+                                                    if (profileCard)
+                                                        profileCard.insertBefore(
+                                                            img,
+                                                            profileCard.firstChild
+                                                        );
+                                                } else {
+                                                    banner.src = presence.banner;
+                                                }
+                                            }
+                                        })
+                                        .catch(() => {
+                                            if (banner.tagName !== "IMG") {
+                                                const img = document.createElement("img");
+                                                img.id = "bgimage";
+                                                img.className = "bgimage";
+                                                img.src = presence.banner;
+                                                const profileCard =
+                                                    document.getElementById("profile-card");
+                                                if (profileCard)
+                                                    profileCard.insertBefore(
+                                                        img,
+                                                        profileCard.firstChild
+                                                    );
+                                            } else {
+                                                banner.src = presence.banner;
+                                            }
+                                        });
+                                } catch (error) {
+                                    if (banner.tagName !== "IMG") {
+                                        const img = document.createElement("img");
+                                        img.id = "bgimage";
+                                        img.className = "bgimage";
+                                        img.src = presence.banner;
+                                        const profileCard =
+                                            document.getElementById("profile-card");
+                                        if (profileCard)
+                                            profileCard.insertBefore(
+                                                img,
+                                                profileCard.firstChild
+                                            );
+                                    } else {
+                                        banner.src = presence.banner;
+                                    }
+                                }
+
+                                const presenceName = document.getElementById("PRESENCE_NAME");
+                                if (presenceName) {
+                                    presenceName.innerHTML = "";
+                                    const a = document.createElement("a");
+                                    a.href = `https://atomic.radio/${activity.assets.small_image_text.toLowerCase()}`;
+                                    a.style = "color: #a9f923; text-decoration: none;";
+                                    a.target = "_blank";
+                                    a.textContent = "atomicradio";
+                                    presenceName.appendChild(a);
+                                }
+                            }
+                        }
+                    }
+                    initializePlaybar();
+                }
+
+                const startTimeTag = document.getElementById("START_TIME");
+                const endTimeTag = document.getElementById("END_TIME");
+                const playbar = document.getElementById("playbar");
+
+                let playbarInterval;
+
+                function initializePlaybar() {
+                    let startTime = new Date(startTimeTag.textContent.trim());
+                    let endTime = new Date(endTimeTag.textContent.trim());
+                    console.log("Start time:", startTime);
+                    console.log("End time:", endTime);
+
+                    function formatTime(seconds) {
+                        const minutes = Math.floor(seconds / 60);
+                        const secs = Math.floor(seconds % 60);
+                        return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+                    }
+
+                    function updatePlaybar(currentTime, totalDuration) {
+                        const percentage = (currentTime / totalDuration) * 100;
+                        playbar.style.transition = "width 0.5s ease";
+                        playbar.style.width = `${percentage}%`;
+                    }
+
+                    if (endTimeTag.textContent == "" || endTimeTag.textContent == undefined || endTimeTag.textContent == null) {
+                        console.log(
+                            "End time is not a valid date, using counter instead."
+                        );
+                        // No end time provided, use a counter
+                        let elapsedTime = (new Date() - startTime) / 1000;
+                        startTimeTag.textContent = formatTime(elapsedTime);
+
+                        function formatElapsedTime(seconds) {
+                            const days = Math.floor(seconds / 86400);
+                            const hours = Math.floor((seconds % 86400) / 3600);
+                            const minutes = Math.floor((seconds % 3600) / 60);
+                            const secs = Math.floor(seconds % 60);
+                            return `${days > 0 ? days + "d " : ""}${hours > 0 ? hours + "h " : ""
+                                }${minutes}m ${secs < 10 ? "0" : ""}${secs}s`;
+                        }
+
+                        function updateElapsedTime() {
+                            elapsedTime++;
+                            startTimeTag.textContent = formatElapsedTime(elapsedTime);
+                        }
+
+                        playbarInterval = setInterval(updateElapsedTime, 1000);
+                    } else {
+                        try {
+                            var totalDuration = 0;
+                            totalDuration = (endTime - startTime) / 1000;
+                            startTimeTag.textContent = formatTime(0);
+                            endTimeTag.textContent = formatTime(totalDuration);
+                            console.log("Total duration:", totalDuration);
+
+                            if (isNaN(totalDuration) || totalDuration <= 0) {
+                                console.error("Invalid total duration:", totalDuration);
+                                return;
+                            } else {
+                                console.log("Valid total duration:", totalDuration);
+                            }
+
+                            function updateCurrentTime() {
+                                const currentTime = (new Date() - startTime) / 1000;
+                                if (currentTime <= totalDuration) {
+                                    startTimeTag.textContent = formatTime(currentTime);
+                                    updatePlaybar(currentTime, totalDuration);
+                                } else {
+                                    endTimeTag.textContent = formatTime(totalDuration);
+                                    playbar.style.width = "100%";
+                                    clearInterval(playbarInterval);
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error parsing start or end time:", error);
+                            return;
+                        }
+                        playbarInterval = setInterval(updateCurrentTime, 1000);
+                        updateCurrentTime();
+                    }
+                }
+
+                // Kill playbar when new data comes in via WebSocket
+                ws.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+
+                    // Clear the playbar interval
+                    if (playbarInterval) {
+                        clearInterval(playbarInterval);
+                        playbar.style.width = "0"; // Reset playbar width
+                    }
+
+                    // Handle the incoming data
+                    if (data.type === "connected" && data.userid === userid) {
+                        updatePresence(data.presence);
+                    } else if (
+                        data.type === "presence_update" &&
+                        data.userid === userid
+                    ) {
+                        updatePresence(data.presence);
+                    } else {
+                        console.log(
+                            "Message type or userid did not match:",
+                            data.type,
+                            data.userid
+                        );
+                    }
+                };
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
