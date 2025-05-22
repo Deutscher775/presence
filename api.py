@@ -198,4 +198,4 @@ async def set_presence(userid: str, request: fastapi.Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=os.getenv("HOST"), port=os.getenv("PORT"), log_level="info")
+    uvicorn.run(app, host="http://" + os.getenv("HOST"), port=os.getenv("PORT"), log_level="info")
