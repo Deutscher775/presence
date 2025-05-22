@@ -1,5 +1,6 @@
 nextcord
 python-dotenv
 fastapi
+fastapi[async]
 aiohttp
 uvicorn
