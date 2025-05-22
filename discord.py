@@ -133,7 +133,7 @@ async def update_user_presence(user_id):
     # **Send data to API**
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(f"http://localhost:9951/presence/{user_id}", json=useractivity) as response:
+            async with session.post(f"http://{os.getenv('API_URL')}:{os.getenv('PORT')}/presence/{user_id}", json=useractivity) as response:
                 print(await response.text())
     except Exception as e:
         print(f"Error sending data: {e}")
