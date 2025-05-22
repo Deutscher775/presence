@@ -19,7 +19,7 @@ client = commands.Bot(command_prefix='!', intents=intents)
 
 
 async def update_user_presence(user_id):
-    guild = client.get_guild(1191002704957407272)
+    guild = client.get_guild(os.getenv("GUILD_ID"))
     user = nextcord.utils.get(guild.members, id=int(user_id))
     fetch_user = await client.fetch_user(user_id)
     role_ids = [role.id for role in user.roles]
@@ -153,7 +153,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.channel.id == 1335337160399786065:
+    if message.channel.id == os.getenv("REFRESH_CHANNEL_ID"):
         if message.content.startswith("refresh"):
             await update_user_presence(message.content.split(" ")[1])
             print("Refreshed user presence of " + message.content.split(" ")[1])

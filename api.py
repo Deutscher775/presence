@@ -6,6 +6,10 @@ from fastapi.middleware import cors
 from fastapi import WebSocket, WebSocketDisconnect
 import requests
 import base64
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = fastapi.FastAPI()
 app.add_middleware(cors.CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
