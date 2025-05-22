@@ -5,6 +5,7 @@ import aiohttp
 import datetime
 import os
 from dotenv import load_dotenv
+import traceback
 
 load_dotenv()
 
@@ -133,23 +134,26 @@ async def update_user_presence(user_id):
     # **Send data to API**
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(f"http://{os.getenv('API_URL')}:{os.getenv('PORT')}/presence/{user_id}", json=useractivity) as response:
+            async with session.post(f"{os.getenv('API_URL')}/presence/{user_id}", json=useractivity) as response:
                 print(await response.text())
     except Exception as e:
+        traceback.print_exc()
         print(f"Error sending data: {e}")
 
 
 
-async def update_user_presences_loop():
-    #while True:
-        #await update_user_presences()
-        #await asyncio.sleep(30)  
-    pass 
+async def update_user_presences():
+    guild = client.get_guild(int(os.getenv("GUILD_ID")))
+    for member in guild.members:
+        if member.id == int(os.getenv("BOT_ID")):
+            continue
+        await update_user_presence(member.id)
+        print("Refreshed user presence of " + str(member.id))
+        await asyncio.sleep(1)  # To avoid hitting the rate limit
 
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
-    client.loop.create_task(update_user_presences_loop())
 
 @client.event
 async def on_message(message):
@@ -166,15 +170,6 @@ async def on_presence_update(before, after):
     await update_user_presence(after.id)
     last_sent = datetime.datetime.now()
     
-
-
-
-
-
-
-
-
-
 
 
 
