@@ -293,8 +293,8 @@
                     <p id="PRESENCE_STATE" class="presence-state"></p>
                 </div>
             </div>
-            <div class="presence-timestamps">
-                <div class="playbar-container" style="position: relative; height: 7px; border-radius: 5px">
+            <div class="presence-timestamps" id="presence-timestamps">
+                <div class="playbar-container" id="playbar-container" style="position: relative; height: 7px; border-radius: 5px">
                     <div id="playbar" style="
 								position: absolute;
 								height: 100%;
@@ -303,7 +303,7 @@
 								border-radius: 5px;
 							"></div>
                 </div>
-                <div class="timestamps" style="
+                <div class="timestamps" id="timestamps" style="
 							display: flex;
 							justify-content: space-between;
 							margin-top: 5px;
@@ -702,6 +702,17 @@
                         const percentage = (currentTime / totalDuration) * 100;
                         playbar.style.transition = "width 0.5s ease";
                         playbar.style.width = `${percentage}%`;
+                    }
+
+                    if (isNaN(startTime.getTime()) && isNaN(endTime.getTime())) {
+                        console.error("Invalid start or end time:", startTime, endTime);
+                        document.getElementById("START_TIME").style.display = "none";
+                        document.getElementById("END_TIME").style.display = "none";
+                        playbar.style.display = "none"; // Reset playbar width
+                        document.getElementById("playbar-container").style.display = "none";
+                        document.getElementById("presence-timestamps").style.display = "none";
+                        document.querySelector(".presence").style = "padding-bottom: 4px;";
+                        return;
                     }
 
                     if (endTimeTag.textContent == "" || endTimeTag.textContent == undefined || endTimeTag.textContent == null) {

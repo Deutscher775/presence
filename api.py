@@ -96,6 +96,10 @@ async def websocket_endpoint(websocket: WebSocket):
         if userid:
             manager.disconnect(userid, websocket)
 
+@app.get("/")
+async def get_index():
+    return fastapi.responses.RedirectResponse(url="/presence")
+
 @app.get("/presence/handler.js")
 async def get_handler_js():
     return fastapi.responses.FileResponse(pathlib.Path(__file__).parent / "handler.js")        
@@ -103,6 +107,17 @@ async def get_handler_js():
 @app.get("/presence/imagenotfound.png")
 async def get_image_not_found():
     return fastapi.responses.FileResponse(pathlib.Path(__file__).parent / "assets/404cat.png")
+
+@app.get("/presence")
+async def get_presence():
+    return fastapi.responses.JSONResponse({
+        "status": "ok",
+        "message": "Presence API is running. Use /presence/{userid} to access presence.",
+        "getbanner": "Use /presence/{userid}/banner to get the user's banner.",
+        "get avatar": "Use /presence/{userid}/avatar to get the user's avatar.",
+        "get json": "Use /presence/{userid}/json to get the user's presence in JSON format.",
+    })
+
 
 @app.get("/presence/{userid}")
 async def get_presence(userid: str):
