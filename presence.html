@@ -674,6 +674,18 @@
                                     a.textContent = "atomicradio";
                                     presenceName.appendChild(a);
                                 }
+
+                                for (const a of document.querySelectorAll("a")) {
+                                    if (a.href.includes("lo-fi")) {
+                                        a.href = a.href.replace(
+                                            "lo-fi",
+                                            "lofi"
+                                        );
+                                    }
+                                    if (decodeURIComponent(a.href).toLowerCase().includes("fightclub germany")) {
+                                        a.href = a.href.replace(/fightclub%20germany/gi, "fightclubgermany").replace(/fightclub germany/gi, "fightclubgermany");
+                                    }
+                                }
                             }
                         }
                     }
