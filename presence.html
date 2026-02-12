@@ -9,6 +9,9 @@
         :root {
             --card-width: CSS_VAR_CARD_WIDTH;
             --card-height: CSS_VAR_CARD_HEIGHT;
+            --borderradius: 20px;
+            --shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+            --bgFilter: blur(5px) brightness(0.5);
         }
 
         * {
@@ -35,21 +38,47 @@
             position: relative;
             width: var(--card-width);
             height: var(--card-height);
-            border-radius: 20px;
+            border-radius: var(--borderradius);
             padding: 0 9px 9px 9px;
-            box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .bgimage {
             position: absolute;
-            width: calc(100% + 5px);
-            height: calc(100% + 5px);
-            border-radius: 20px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border-radius: var(--borderradius);
             object-fit: cover;
             z-index: -1;
             top: -5px;
             left: -5px;
-            filter: blur(5px) brightness(0.5);
+            filter: var(--bgFilter);
+        }
+
+        /* Spezielle Regel für imgdims Parameter */
+        body:has(.profile-card[style*="height: 130px"]) .bgimage {
+            height: 130px;
+            top: 0;
+        }
+
+        .imgdims-mode .bgimage {
+            height: 130px !important;
+            top: 0 !important;
+        }
+
+        .imgdims-mode .profile-card {
+            padding: 0 9px !important;
+            margin: 0 !important;
+        }
+
+        .imgdims-mode {
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+            height: 130px !important;
         }
 
         .avatar {
@@ -201,6 +230,119 @@
         a:hover {
             text-decoration: underline;
         }
+
+        .loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 9px 9px 9px;
+            background: linear-gradient(135deg, #2c2f33 0%, #23272a 100%);
+            border-radius: var(--borderradius);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .loading-container.hidden {
+            animation: fadeOut 0.3s ease-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.05) 25%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.05) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .skeleton-avatar-section {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            gap: 13px;
+        }
+
+        .skeleton-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .skeleton-user-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skeleton-username {
+            width: 120px;
+            height: 20px;
+        }
+
+        .skeleton-status {
+            width: 80px;
+            height: 16px;
+        }
+
+        .skeleton-presence {
+            margin-top: 12px;
+            display: flex;
+            gap: 9px;
+        }
+
+        .skeleton-presence-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .skeleton-presence-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skeleton-presence-title {
+            width: 140px;
+            height: 18px;
+        }
+
+        .skeleton-presence-line {
+            width: 100px;
+            height: 14px;
+        }
+
+        .skeleton-presence-line:last-child {
+            width: 120px;
+        }
     </style>
 </head>
 
@@ -221,10 +363,12 @@
     -->
     <script>
         let cssVarCardWidth =
-            window.location.searchParams?.get("width") || "350px";
+            new URLSearchParams(window.location.search).get("width") || "350px";
         let cssVarCardHeight =
-            window.location.searchParams?.get("height") || "auto";
-        if (cssVarCardWidth === "auto" || cssVarCardHeight === "auto") {
+            new URLSearchParams(window.location.search).get("height") || "auto";
+        console.debug("ParamCard width:", cssVarCardWidth);
+        console.debug("ParamCard height:", cssVarCardHeight);
+        if (cssVarCardWidth === "auto" && cssVarCardHeight === "auto") {
             console.error(
                 "Invalid CSS variable values for width or height. Please provide valid values."
             );
@@ -239,8 +383,22 @@
         if (!isNaN(cssVarCardHeight)) {
             cssVarCardHeight = cssVarCardHeight + "px";
         }
+        let borderRadius = "20px";
+        let shadow = "10px 10px 10px rgba(0, 0, 0, 0.2)";
+        let bgFilter = "blur(5px) brightness(0.5)";
+        if (new URLSearchParams(window.location.search).has("imgdims")) {
+            cssVarCardHeight = "130px";
+            cssVarCardWidth = "350px";
+            borderRadius = "0px";
+            shadow = "0";
+            bgFilter = "brightness(0.5)";
+        }
         console.log("Card width:", cssVarCardWidth);
         console.log("Card height:", cssVarCardHeight);
+        console.log("Border radius:", borderRadius);
+        console.log("Shadow:", shadow);
+        console.log("Background filter:", bgFilter);
+
         document.documentElement.style.setProperty(
             "--card-width",
             cssVarCardWidth
@@ -249,13 +407,47 @@
             "--card-height",
             cssVarCardHeight
         );
+        document.documentElement.style.setProperty(
+            "--borderradius",
+            borderRadius
+        );
+        document.documentElement.style.setProperty(
+            "--shadow",
+            shadow
+        );
+        document.documentElement.style.setProperty(
+            "--bgFilter",
+            bgFilter
+        );
+        
+        // CSS-Klasse für imgdims-Modus hinzufügen
+        if (new URLSearchParams(window.location.search).has("imgdims")) {
+            document.body.classList.add("imgdims-mode");
+        }
     </script>
     <div class="profile-card" id="profile-card">
+        <div class="loading-container" id="loading-container">
+            <div class="skeleton-avatar-section">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton-user-info">
+                    <div class="skeleton skeleton-username"></div>
+                    <div class="skeleton skeleton-status"></div>
+                </div>
+            </div>
+            <div class="skeleton-presence">
+                <div class="skeleton skeleton-presence-image"></div>
+                <div class="skeleton-presence-details">
+                    <div class="skeleton skeleton-presence-title"></div>
+                    <div class="skeleton skeleton-presence-line"></div>
+                    <div class="skeleton skeleton-presence-line"></div>
+                </div>
+            </div>
+        </div>
         <img src="" alt="" class="bgimage" id="bgimage" />
         <span id="STATUS_DOT" class="status-dot"><img src="./status_icons/online.png" alt="" id="STATUS_DOT_IMG"
                 class="status-dot-img" /></span>
         <div class="avatar">
-            <img id="USER_AVATAR" src="USER_AVATAR" alt="Avatar" />
+            <img id="USER_AVATAR" src="USER_AVATAR" alt="" />
             <div class="user-info">
                 <h2 id="USERNAME" class="username"></h2>
                 <p id="CUSTOM_STATUS" class="custom-status" style="line-height: 1.5em"></p>
@@ -362,6 +554,15 @@
                 function updatePresence(presence) {
                     console.log("Updating presence:", presence);
 
+                    // Hide loading animation with fade effect
+                    const loadingContainer = document.getElementById("loading-container");
+                    if (loadingContainer) {
+                        loadingContainer.classList.add("hidden");
+                        setTimeout(() => {
+                            loadingContainer.style.display = "none";
+                        }, 300);
+                    }
+
                     // 1. Banner
                     let banner = document.getElementById("bgimage");
                     if (presence.banner) {
@@ -375,7 +576,7 @@
                         }
                         banner.src = presence.banner;
                         banner.style.display = "block";
-                        banner.style.filter = "blur(5px) brightness(0.5)";
+                        banner.style.filter = "var(--bgFilter)";
                     } else if (banner) {
                         banner.style.display = "none";
                     }
@@ -521,7 +722,7 @@
                             const a = document.createElement("a");
                             a.href = activity.url || "#";
                             a.target = "_blank";
-                            a.textContent = activity.name;
+                            a.textContent = activity.name.length > 24 ? activity.name.slice(0, 24) + "..." : activity.name;
                             presenceNameTag.appendChild(a);
                         } else {
                             presenceNameTag.style.display = "none";
@@ -589,7 +790,7 @@
                                     audioPlayer.src = `https://listen.atomic.radio/${activity.assets.small_image_text.toLowerCase()}/lowquality`;
                                 });
 
-                            if (banner) {
+                            if (banner && !window.location.href.includes("imgdims")) {
                                 try {
                                     const preview_gif_url = `https://assets.atomic.radio/tracks/previews/${song_id}.mp4`;
                                     fetch(preview_gif_url, { method: "HEAD" })
@@ -603,7 +804,7 @@
                                                 video.id = "bgimage";
                                                 video.className = "bgimage";
                                                 video.src = preview_gif_url;
-                                                video.style.filter = "blur(5px) brightness(0.5)";
+                                                video.style.filter = "var(--bgFilter)";
                                                 const profileCard =
                                                     document.getElementById("profile-card");
                                                 if (profileCard)
@@ -689,6 +890,99 @@
                             }
                         }
                     }
+
+                    // Spotify special - background video
+                    if (activities[0].type == "ActivityType.listening" && activities[0].url && activities[0].url.includes("spotify.com")) {
+                        const track_id = activities[0].url.split("/track/")[1];
+                        console.log("Spotify track ID:", track_id);
+                        
+                        if (banner && !window.location.href.includes("imgdims")) {
+                            // First, ensure we have a banner image (replace old video during transition)
+                            if (banner.tagName === "VIDEO") {
+                                banner.remove();
+                                const img = document.createElement("img");
+                                img.id = "bgimage";
+                                img.className = "bgimage";
+                                img.src = presence.banner;
+                                img.style.filter = "var(--bgFilter)";
+                                const profileCard = document.getElementById("profile-card");
+                                if (profileCard) {
+                                    profileCard.insertBefore(img, profileCard.firstChild);
+                                }
+                                banner = img; // Update banner reference
+                            }
+                            
+                            const video_url = `${window.location.origin}/presence/videos/clips/${track_id}`;
+                            
+                            fetch(video_url, { method: "GET" })
+                                .then((response) => {
+                                    if (response.ok) {
+                                        // Keep banner visible, create video in background
+                                        const video = document.createElement("video");
+                                        video.autoplay = true;
+                                        video.loop = true;
+                                        video.muted = true;
+                                        video.id = "bgimage-video";
+                                        video.className = "bgimage";
+                                        video.src = video_url;
+                                        video.style.filter = "var(--bgFilter)";
+                                        video.style.display = "none"; // Hide until loaded
+                                        
+                                        // Replace banner with video once it's loaded
+                                        video.addEventListener("canplaythrough", function() {
+                                            const currentBanner = document.getElementById("bgimage");
+                                            if (currentBanner) {
+                                                currentBanner.remove();
+                                            }
+                                            video.id = "bgimage";
+                                            video.style.display = "block";
+                                            const profileCard = document.getElementById("profile-card");
+                                            if (profileCard) {
+                                                profileCard.insertBefore(video, profileCard.firstChild);
+                                            }
+                                        }, { once: true });
+                                        
+                                        // Add to DOM to start loading
+                                        const profileCard = document.getElementById("profile-card");
+                                        if (profileCard) {
+                                            profileCard.appendChild(video);
+                                        }
+                                    } else {
+                                        // Fallback to banner image if video not available
+                                        if (banner.tagName !== "IMG") {
+                                            banner.remove();
+                                            const img = document.createElement("img");
+                                            img.id = "bgimage";
+                                            img.className = "bgimage";
+                                            img.src = presence.banner;
+                                            img.style.filter = "var(--bgFilter)";
+                                            const profileCard = document.getElementById("profile-card");
+                                            if (profileCard)
+                                                profileCard.insertBefore(img, profileCard.firstChild);
+                                        } else {
+                                            banner.src = presence.banner;
+                                        }
+                                    }
+                                })
+                                .catch(() => {
+                                    // Fallback on error
+                                    if (banner.tagName !== "IMG") {
+                                        banner.remove();
+                                        const img = document.createElement("img");
+                                        img.id = "bgimage";
+                                        img.className = "bgimage";
+                                        img.src = presence.banner;
+                                        img.style.filter = "var(--bgFilter)";
+                                        const profileCard = document.getElementById("profile-card");
+                                        if (profileCard)
+                                            profileCard.insertBefore(img, profileCard.firstChild);
+                                    } else {
+                                        banner.src = presence.banner;
+                                    }
+                                });
+                        }
+                    }
+
                     initializePlaybar();
                 }
 

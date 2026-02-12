@@ -24,7 +24,7 @@ async def update_user_presence(user_id):
     user = nextcord.utils.get(guild.members, id=int(user_id))
     fetch_user = await client.fetch_user(user_id)
     role_ids = [role.id for role in user.roles]
-    print(role_ids)
+    print(user.activities)
     if 1360265497454838016 in role_ids:
         print("User has hidden their username and avatar")
         useractivity = {
@@ -49,6 +49,7 @@ async def update_user_presence(user_id):
         }
 
     for activity in user.activities:
+        print(f"Processing activity: {activity}")
         activity_dict = {
             "name": activity.name if hasattr(activity, 'name') else None,
             "type": str(activity.type) if hasattr(activity, 'type') else None,
@@ -154,6 +155,10 @@ async def update_user_presences():
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
+    for user in client.users:
+        await update_user_presence(user.id)
+        print("Initial presence update for " + str(user.id))
+        # await asyncio.sleep(1)  # To avoid hitting the rate limit
 
 @client.event
 async def on_message(message):
